@@ -647,10 +647,10 @@ table td {
 }
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 2px; /* Adjust the gap between images as needed */
     width: 100%;
-    max-width: 1200px; /* Max width to keep it responsive */
+    max-width: 2400px; /* Max width to keep it responsive */
     margin: auto;
 }
 
@@ -659,4 +659,32 @@ table td {
     height: auto;
     object-fit: cover; /* Ensures images cover the area without distortion */
 }
+.imposing-photo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 50%; /* Adjust width as needed */
+    height: 100vh; /* Full viewport height */
+    background-image: url('/assets/SmokeyOnBroadwayNoBkg.jpg'); /* Replace with your image */
+    background-size: cover;
+    background-position: center;
+    z-index: -1; /* Ensures it stays behind other content */
+}
+
+.content {
+    width: 50%; /* Adjust width to match the photo */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Ensure content doesn't overlap with the photo */
+@media (max-width: 768px) {
+    .imposing-photo {
+        display: none; /* Hide the photo on smaller screens if needed */
+    }
+    .content {
+        width: 100%;
+    }
+}
+
 /*# sourceMappingURL=main.css.map */
