@@ -1,0 +1,40 @@
+/* Reset some default styles */
+body, h1, p {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.imposing-photo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 50%; /* Adjust width as needed */
+    height: 100vh; /* Full viewport height */
+    background-image: url('/assets/17redsuitNoBkg.png'); 
+    background-size: cover;
+    background-position: center;
+    z-index: -1; /* Ensures it stays behind other content */
+}
+
+.content {
+    width: 50%; /* Adjust width to match the photo */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Ensure content doesn't overlap with the photo */
+@media (max-width: 768px) {
+    .imposing-photo {
+        display: none; /* Hide the photo on smaller screens if needed */
+    }
+    .content {
+        width: 100%;
+    }
+}
