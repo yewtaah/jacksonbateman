@@ -663,7 +663,7 @@ table td {
     position: fixed;
     top: 0;
     left: 0;
-    width: 50%; /* Adjust width as needed */
+    width: 30%; /* Adjust width as needed */
     height: 100vh; /* Full viewport height */
     background-image: url('/assets/SmokeyOnBroadwayNoBkg.jpg'); /* Replace with your image */
     background-size: cover;
