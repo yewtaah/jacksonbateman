@@ -20,10 +20,9 @@
 
 title: Jackson Bateman
 email: jacksondbateman@gmail.com
-description: >- # this means to ignore newlines until "baseurl:"
-Jackson Bateman is an up and coming new performer in the world of musical theatre. He is currently studying at AMDA LA in the BFA Musical Theatre program after spending 2 years at the NYC conservatory.
+description: Jackson Bateman is an up and coming new performer in the world of musical theatre. He is currently studying at AMDA LA in the BFA Musical Theatre program after spending 2 years at the NYC conservatory.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "http://jacksonbateman.com" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: jacksonbateman
 github_username: jacksonbateman
 
