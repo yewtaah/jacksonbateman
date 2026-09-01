@@ -1,3 +1,14 @@
+<!--
+  contact.html — contact form + direct contact methods.
+
+  The form has no backend: submitting it just builds a mailto: link from
+  the entered name/email/message and hands off to the visitor's own email
+  app (see the inline <script> near the bottom of this file). That means
+  no server, no spam risk, and no form-submission cost, but also no way to
+  know a message was actually sent, and it won't work at all if the visitor
+  has no email client configured. See the "real contact-form backend" issue
+  in GitHub Issues for the tradeoff and what a real fix would look like.
+-->
 <!doctype html>
 <html lang="en">
 <head>
@@ -138,6 +149,14 @@
 
 <script src="/assets/js/main.js"></script>
 <script>
+  // This inline script (page-specific, so it lives here rather than in the
+  // shared main.js) intercepts the form's normal submit — which would
+  // otherwise reload the page and send the fields nowhere, since there's no
+  // `action` attribute or backend — and instead builds a `mailto:` URL from
+  // whatever the visitor typed, then hands off to their email client.
+  // encodeURIComponent() is required because a mailto URL's query string
+  // can't contain raw spaces, line breaks, or the & / ? characters those
+  // fields might legitimately contain.
   var form = document.getElementById('contact-form');
   if (form) {
     form.addEventListener('submit', function (e) {

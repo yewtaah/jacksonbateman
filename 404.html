@@ -1,3 +1,14 @@
+<!--
+  404.html — not-found page.
+
+  Heads up: this page is not currently reachable. The Amplify app's rewrite
+  rules (Hosting > Rewrites and redirects in the AWS console — this isn't
+  config committed to the repo) include a catch-all "/<*> -> /index.html,
+  404-200" rule, which is the standard Amplify default for single-page
+  apps. That rule matches first and sends every not-found URL to the
+  homepage (with the HTTP status forced to 404) instead of to this file.
+  See the "wire up the real 404 page" issue in GitHub Issues.
+-->
 <!doctype html>
 <html lang="en">
 <head>
