@@ -1,3 +1,25 @@
+"""One-time migration script — not a general-purpose tool.
+
+This ran once, when the site moved off its old Jekyll scaffold (source
+files under _site/assets, with inconsistent phone-export filenames like
+"IMG_4821.JPG") onto the current static-HTML structure (assets/img/, with
+descriptive slugs like headshot-2024.jpg). It resizes each image to a
+1900px max dimension and re-compresses it (JPEG quality 82, optimized PNG),
+which is what took the original image set from ~99MB down to ~14MB.
+
+It is NOT the tool to reach for when adding a new photo today — the
+RENAME dict below is a fixed, one-time mapping of specific old filenames to
+specific new ones, and SRC points at a directory (_site/) that no longer
+exists in this repo. To add a photo now: just save an already-reasonably-
+sized image (a phone photo run through any image editor/exporter at up to
+~1900px on the long edge is plenty) straight into assets/img/ with a
+descriptive-slug filename, and reference it from the relevant HTML page.
+Requires Pillow (`pip install pillow`) to run at all, which is why it's a
+standalone script rather than something wired into a build step — this
+site has no build step. See the "generalize the image script" issue in
+GitHub Issues if you want to turn this into a reusable "add a photo" tool.
+"""
+
 import os
 from PIL import Image, ImageOps
 

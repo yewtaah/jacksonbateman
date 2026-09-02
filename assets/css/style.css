@@ -2,26 +2,59 @@
    Jackson Bateman — design system
    "Lone Star" — modern navy, white & Texas red, with a single star signature.
    Economics/business portfolio with a performing-arts wing.
+
+   HOW THIS FILE IS ORGANIZED
+   Every page on the site (index.html, resume.html, etc.) links to this one
+   stylesheet, and every reusable "look" — buttons, cards, the nav — is
+   defined once here as a class (.btn, .card, ...) and reused across pages.
+   That's the whole trick to keeping a multi-page static site consistent
+   without a framework: one CSS file, shared class names, no duplication.
+
+   The file is organized in the order a browser meets a page: base/reset
+   first, then header/nav, then hero, then generic section/section-head
+   patterns, then one block per *feature* (gallery, resume, timeline,
+   contact form, footer), roughly in the order those features appear as you
+   scroll through the site. See README.md for the full site map.
    ========================================================================== */
 
+/* Pull in three Google Fonts in one request. Sora = headlines (bold,
+   geometric, "modern business"), Inter = body copy (reads well at small
+   sizes), IBM Plex Mono = anything that's a number or a data point (stats,
+   dates, tags) — monospace makes rows of numbers line up visually, which is
+   why it shows up on the résumé and stat cards. */
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
+/* Design tokens: every color, font, and spacing value the site uses is
+   declared once here as a CSS custom property (a "variable"), then referenced
+   everywhere else as var(--name). Change a value in this one block and it
+   updates across all 9 pages — that's the whole point of a design-token
+   system instead of hard-coding colors inline throughout the CSS.
+
+   Note on naming: --brass and --stage are left over from an earlier palette
+   (a parchment-and-brass "ledger" theme) that got restyled into this navy/
+   red Texas theme without renaming the variables. That's a deliberate
+   trade-off, not a mistake — renaming would have meant touching every page's
+   inline `style="color:var(--brass)"` reference too. In your own project,
+   decide case by case whether a rename is worth the extra diff. */
 :root {
-  --paper: #F4F6F9;
-  --paper-soft: #EAEEF3;
-  --card: #FFFFFF;
-  --ink: #0F1B2E;
-  --ink-soft: #4C5768;
-  --ink-faint: #8790A0;
-  --line: #E1E5EC;
-  --line-strong: #CBD2DC;
+  /* Neutrals: backgrounds, surfaces, borders, and text, light-to-dark. */
+  --paper: #F4F6F9;       /* page background */
+  --paper-soft: #EAEEF3;  /* alternate section background, one shade darker */
+  --card: #FFFFFF;        /* cards, form fields, anything "raised" off the page */
+  --ink: #0F1B2E;         /* primary text + the dark navy used for the footer/CTA */
+  --ink-soft: #4C5768;    /* secondary/body text */
+  --ink-faint: #8790A0;   /* tertiary text — labels, captions, timestamps */
+  --line: #E1E5EC;        /* hairline dividers */
+  --line-strong: #CBD2DC; /* borders that need to read a bit more clearly */
 
-  /* primary accent — Texas flag red */
+  /* primary accent — Texas flag red. Used sparingly: buttons, links, the
+     lone-star marks, and anything that should draw the eye first. */
   --brass: #C8202E;
-  --brass-bright: #E23B47;
-  --brass-soft: rgba(200, 32, 46, 0.10);
+  --brass-bright: #E23B47; /* hover/active state for the accent above */
+  --brass-soft: rgba(200, 32, 46, 0.10); /* accent as a light background tint */
 
-  /* secondary accent — reserved for the Performing Arts wing */
+  /* secondary accent — reserved for the Performing Arts wing only, so that
+     section reads as a distinct "room" in the site without a full re-theme. */
   --stage: #B4790E;
   --stage-bright: #D99A2B;
   --stage-soft: rgba(180, 121, 14, 0.12);
@@ -30,20 +63,27 @@
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --container: 1180px;
-  --radius: 16px;
-  --radius-sm: 10px;
+  --container: 1180px; /* max content width — keeps text lines readable on wide screens */
+  --radius: 16px;      /* corner rounding for cards/panels */
+  --radius-sm: 10px;   /* corner rounding for smaller elements (photos, chips, inputs) */
 
+  /* Three shadow "weights" so elevation stays consistent site-wide instead of
+     every component inventing its own box-shadow values. */
   --shadow-sm: 0 1px 2px rgba(15, 27, 46, 0.06), 0 1px 1px rgba(15, 27, 46, 0.04);
   --shadow-md: 0 12px 28px rgba(15, 27, 46, 0.10), 0 2px 8px rgba(15, 27, 46, 0.06);
   --shadow-lg: 0 24px 56px rgba(15, 27, 46, 0.16), 0 4px 12px rgba(15, 27, 46, 0.08);
 
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1); /* the one easing curve used for every transition/animation */
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; } /* native smooth-scroll for in-page anchor links */
 
+/* Accessibility: some visitors set "reduce motion" in their OS because
+   animation causes discomfort (vestibular disorders) or they just prefer a
+   stiller UI. This respects that by collapsing every animation/transition on
+   the page to effectively-instant, rather than turning motion off entirely
+   (which would need touching every animation rule individually). */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
@@ -94,6 +134,13 @@ p { margin: 0 0 1em; color: var(--ink-soft); }
   color: var(--brass);
 }
 
+/* The small star before every eyebrow label is a single SVG star path,
+   inlined directly as a data: URI (no separate image file/request) and
+   applied as a CSS mask rather than a background-image. A mask only needs
+   a shape — color comes from `background-color`, i.e. var(--brass) — so if
+   the accent color ever changes, this star recolors for free instead of
+   needing a re-exported icon. -webkit-mask is required for Safari; mask is
+   the standard property everyone else uses. */
 .eyebrow::before {
   content: '';
   display: block;
@@ -262,6 +309,13 @@ p { margin: 0 0 1em; color: var(--ink-soft); }
   background: var(--paper);
 }
 
+/* The ascending line behind the hero headline is a real <svg><path> in
+   index.html, animated with a classic "line draw" trick: give the path a
+   stroke-dasharray equal to (at least) its own length, offset the dashes by
+   that same amount so the whole stroke is invisible, then animate
+   stroke-dashoffset down to 0. The dashes appear to "draw in" from start to
+   end. The two waypoint dots and the star fade in afterwards via
+   `animation-delay`, timed to land just after the line reaches them. */
 .hero-trendline {
   position: absolute;
   inset: 0;
@@ -365,7 +419,14 @@ p { margin: 0 0 1em; color: var(--ink-soft); }
   .ledger-card { max-width: 380px; margin: 0 auto; }
 }
 
-/* facts ticker strip */
+/* facts ticker strip — the scrolling marquee under the hero.
+   main.js duplicates the .ticker-item list once (see "Duplicate ticker
+   content" in main.js), so the DOM actually contains the same items twice
+   back to back. The animation below then just slides the whole strip left
+   by exactly 50% of its width (see @keyframes ticker) — since the second
+   half is an identical copy of the first, the moment it fully scrolls off,
+   what's left on screen is indistinguishable from the starting position,
+   so the loop reads as seamless with no visible jump-cut. */
 .ticker-wrap {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -434,6 +495,13 @@ section { padding: 108px 0; }
 
 .bg-soft { background: var(--paper-soft); }
 
+/* Scroll-reveal: elements start invisible and slightly lower, then fade/
+   slide into place. This class only sets the *before* and *after* states —
+   the thing that actually adds `.is-visible` at the right moment is an
+   IntersectionObserver in main.js, which watches every `.reveal` element and
+   flips the class on once it scrolls into view. CSS handles the animation,
+   JS handles the "when." The `-delay-N` variants stagger a group of
+   siblings (e.g. four cards in a row) so they don't all animate in unison. */
 .reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -669,12 +737,17 @@ section { padding: 108px 0; }
   letter-spacing: 0.03em;
 }
 
+/* CSS multi-column layout (`columns:`) gives a Pinterest-style masonry grid
+   with zero JavaScript: the browser flows items down each column in order,
+   wrapping to the next column once a column fills. "260px" is a minimum
+   column width — the browser fits as many 260px+ columns as will comfortably
+   render, so this also handles the responsive column count automatically. */
 .masonry {
   columns: 3 260px;
   column-gap: 14px;
 }
 .masonry .ph {
-  break-inside: avoid;
+  break-inside: avoid; /* without this, a photo can get its bottom half sliced onto the next column */
   margin-bottom: 14px;
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -821,6 +894,12 @@ section { padding: 108px 0; }
   color: var(--ink-soft);
 }
 
+/* position: sticky pins the profile card in place once the page scrolls
+   past it, so it stays visible alongside the résumé's longer left column —
+   no JS scroll listener needed. `top: 110px` is the offset from the
+   viewport's top edge (clears the fixed site header); `align-self: start`
+   stops the grid from stretching this column to match the taller one next
+   to it, which sticky positioning needs to have any room to move within. */
 .resume-side {
   position: sticky;
   top: 110px;
