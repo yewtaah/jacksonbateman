@@ -1133,6 +1133,162 @@ audio { width: 100%; height: 44px; accent-color: var(--stage); }
   line-height: 1;
 }
 
+/* ==========================================================================
+   Motion & watermark system
+   Everything below is injected/activated by main.js against the *existing*
+   classes above (.hero, .page-header, .cta-banner, .site-footer, .card,
+   .btn, .reveal, ...) rather than new markup — so it lights up on all 9
+   pages without editing a single .html file. See main.js for the JS half.
+   ========================================================================== */
+
+/* Lone-star watermark — a giant, near-invisible copy of the same star path
+   used in .eyebrow and the CTA stamp, so it reads as "part of the brand"
+   rather than a random decoration. main.js appends one <svg class="watermark">
+   as the first child of every .hero / .page-header / .cta-banner /
+   .site-footer it finds; position + color are keyed off which of those it
+   landed in, size/rotation are shared. It sits at z-index: 0, behind the
+   real content (which already sits on z-index: 1 in those sections via
+   .container / .cta-banner > *), and never intercepts clicks or scroll. */
+.watermark {
+  position: absolute;
+  width: clamp(260px, 34vw, 560px);
+  height: clamp(260px, 34vw, 560px);
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.045;
+  animation: watermark-spin 160s linear infinite;
+}
+@keyframes watermark-spin { to { transform: rotate(360deg); } }
+
+.hero .watermark        { fill: var(--ink); bottom: -14%; left: -8%; }
+.page-header .watermark { fill: var(--ink); top: -20%; right: -6%; }
+.cta-banner .watermark  { fill: #fff; opacity: 0.06; bottom: -22%; right: -8%; }
+.site-footer             { position: relative; overflow: hidden; }
+.site-footer .watermark { fill: #fff; opacity: 0.05; top: -28%; left: -8%; }
+
+/* Hero aurora — two soft, slowly-drifting color blobs behind the hero copy,
+   built from ::before/::after so no extra markup is needed. Same z-index
+   layer as the trendline SVG and the watermark above; .hero .container
+   already sits above all of it at z-index: 1. */
+.hero::before, .hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.hero::before {
+  width: 420px; height: 420px;
+  top: -140px; right: 6%;
+  background: var(--brass);
+  opacity: 0.12;
+  animation: aurora-a 22s var(--ease) infinite alternate;
+}
+.hero::after {
+  width: 360px; height: 360px;
+  bottom: -160px; left: 4%;
+  background: var(--stage);
+  opacity: 0.10;
+  animation: aurora-b 26s var(--ease) infinite alternate;
+}
+@keyframes aurora-a { from { transform: translate(0,0) scale(1); } to { transform: translate(-30px, 30px) scale(1.12); } }
+@keyframes aurora-b { from { transform: translate(0,0) scale(1); } to { transform: translate(30px, -20px) scale(1.08); } }
+
+/* Shimmering "Bateman" — a slow gradient sweep across the hero's emphasized
+   headline word, guarded by @supports so browsers without background-clip:
+   text just keep the plain solid brass color instead of going invisible. */
+.hero-copy h1 em { color: var(--brass); }
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .hero-copy h1 em {
+    background: linear-gradient(90deg, var(--brass), var(--brass-bright), var(--stage), var(--brass));
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: text-shine 7s ease-in-out infinite;
+  }
+}
+@keyframes text-shine {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* Button shine sweep — a light diagonal highlight that sweeps across
+   .btn-primary on hover. Pure ::after, no markup change. */
+.btn-primary { position: relative; overflow: hidden; }
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.65s var(--ease);
+}
+.btn-primary:hover::after { left: 130%; }
+
+/* Tilt & magnetic buttons — main.js applies these as *inline* transforms on
+   mousemove (desktop/mouse only; it checks (hover:hover) and skips touch,
+   and checks prefers-reduced-motion itself since inline transforms bypass
+   the blanket transition-duration override up top). These declarations just
+   give the elements a 3D context and a default transition to snap back to
+   on mouseleave — main.js swaps `transition` on/off around each move. */
+.ledger-card, .card, .teaser-card, .music-card, .track-card, .form-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Scroll progress bar — injected once as the last element in <body>. Width
+   is a plain scroll-position readout (not decorative motion), so it's left
+   running even under prefers-reduced-motion. */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--brass), var(--stage-bright));
+  z-index: 200;
+  pointer-events: none;
+}
+
+/* Photo "uncover" reveal — layers on top of the existing .reveal fade/slide.
+   The wrapper (.ledger-card, .split-media, ...) already animates in via
+   .reveal/.is-visible; while it's mid-reveal, the <img> inside is clipped
+   from the bottom and wipes open as its ancestor settles into place. */
+.ledger-photo img, .split-media img, .teaser-media img, .music-art img, .track-art img {
+  transition: clip-path 0.9s var(--ease);
+}
+.reveal:not(.is-visible) .ledger-photo img,
+.reveal:not(.is-visible) .split-media img,
+.reveal:not(.is-visible) .teaser-media img,
+.reveal:not(.is-visible) .music-art img,
+.reveal:not(.is-visible) .track-art img {
+  clip-path: inset(0 0 100% 0);
+}
+
+/* Reveal, upgraded — a touch of scale added to the existing fade/slide so
+   elements settle into place instead of just sliding, applied globally to
+   every .reveal element already in the markup. */
+.reveal { transform: translateY(22px) scale(0.98); }
+.reveal.is-visible { transform: translateY(0) scale(1); }
+
+/* Hero profile card stats — stagger in, one row at a time, once the card
+   itself is revealed (.ledger-card carries .reveal, so this piggybacks on
+   the same is-visible flip main.js already does — no JS change needed). */
+.ledger-stats .stat {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.ledger-card.is-visible .stat { opacity: 1; transform: translateX(0); }
+.ledger-card.is-visible .stat:nth-of-type(1) { transition-delay: 0.55s; }
+.ledger-card.is-visible .stat:nth-of-type(2) { transition-delay: 0.65s; }
+.ledger-card.is-visible .stat:nth-of-type(3) { transition-delay: 0.75s; }
+.ledger-card.is-visible .stat:nth-of-type(4) { transition-delay: 0.85s; }
+
 /* utility */
 .mt-40 { margin-top: 40px; }
 .text-center { text-align: center; }

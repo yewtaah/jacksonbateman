@@ -187,4 +187,90 @@
      load. */
   var yearEl = document.querySelector('[data-year]');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* Reduced-motion flag, shared by everything below. The CSS reduced-motion
+     query at the top of style.css already zeroes out every *declarative*
+     CSS animation/transition, but the tilt and magnetic-button effects work
+     by writing `element.style.transform` directly from mousemove — that's
+     JS-driven, not a CSS transition, so it needs its own explicit check to
+     respect the same preference. */
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasFinePointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* Lone-star watermarks — see the long comment on .watermark in style.css.
+     One inline SVG, built once and cloned, dropped as the first child of
+     every .hero / .page-header / .cta-banner / .site-footer on the page (a
+     page typically has zero or one of each). Positioning, color, and the
+     slow rotation are all CSS — this just plants the shape. */
+  var STAR_PATH = 'M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.87L12 17.27l-6.18 3.23L7 13.63l-5-4.87 6.91-1z';
+  var watermarkHosts = document.querySelectorAll('.hero, .page-header, .cta-banner, .site-footer');
+  watermarkHosts.forEach(function (host) {
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add('watermark');
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', STAR_PATH);
+    svg.appendChild(path);
+    host.insertBefore(svg, host.firstChild);
+  });
+
+  /* Scroll progress bar — a single fixed strip appended once to <body>,
+     filled left-to-right by how far down the page you've scrolled. It's a
+     position readout rather than decorative motion, so unlike tilt/magnetic
+     below it isn't gated behind reduceMotion. */
+  var progressBar = document.createElement('div');
+  progressBar.className = 'scroll-progress';
+  document.body.appendChild(progressBar);
+  function onScrollProgress() {
+    var doc = document.documentElement;
+    var scrollTop = doc.scrollTop || document.body.scrollTop;
+    var scrollable = (doc.scrollHeight || document.body.scrollHeight) - doc.clientHeight;
+    progressBar.style.width = (scrollable > 0 ? (scrollTop / scrollable) * 100 : 0) + '%';
+  }
+  onScrollProgress();
+  window.addEventListener('scroll', onScrollProgress, { passive: true });
+
+  /* 3D tilt — desktop-with-a-mouse only (touch has no hover, and mouseleave
+     doesn't fire reliably on tap), and skipped entirely under
+     prefers-reduced-motion. Tilt angle is derived from cursor position
+     relative to the card's own center, so it always tilts "toward" the
+     cursor. Transition is turned off while actively tracking the mouse (so
+     the tilt follows instantly) and turned back on for the snap-back on
+     mouseleave. */
+  if (hasFinePointer && !reduceMotion) {
+    var tiltEls = document.querySelectorAll('.ledger-card, .card, .teaser-card, .music-card, .track-card, .form-card');
+    tiltEls.forEach(function (el) {
+      el.addEventListener('mousemove', function (e) {
+        var rect = el.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width - 0.5;
+        var y = (e.clientY - rect.top) / rect.height - 0.5;
+        el.style.transition = 'transform 0.1s linear';
+        el.style.transform = 'perspective(900px) rotateX(' + (-y * 6) + 'deg) rotateY(' + (x * 8) + 'deg) translateY(-2px)';
+      });
+      el.addEventListener('mouseleave', function () {
+        el.style.transition = 'transform 0.5s var(--ease)';
+        el.style.transform = '';
+      });
+    });
+
+    /* Magnetic buttons — pill-shaped buttons (not full-width .btn-block
+       ones, where a "pull toward cursor" over that much width would feel
+       like the button is sliding away rather than reacting to you) and the
+       small round social icons drift a few pixels toward the cursor. */
+    var magnets = document.querySelectorAll('.btn:not(.btn-block), .social-btn');
+    magnets.forEach(function (el) {
+      el.addEventListener('mousemove', function (e) {
+        var rect = el.getBoundingClientRect();
+        var x = e.clientX - rect.left - rect.width / 2;
+        var y = e.clientY - rect.top - rect.height / 2;
+        el.style.transition = 'transform 0.1s linear';
+        el.style.transform = 'translate(' + (x * 0.22) + 'px, ' + (y * 0.22 - 2) + 'px)';
+      });
+      el.addEventListener('mouseleave', function () {
+        el.style.transition = 'transform 0.4s var(--ease)';
+        el.style.transform = '';
+      });
+    });
+  }
 })();
